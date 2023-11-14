@@ -1,71 +1,43 @@
+// App.js
 import React from 'react';
-import { useState } from 'react';
-import ImageUploadAndManualEntryForm from './ImageUploadAndManualEntryForm';
-
-
-
+import ImageUploadForm from './ImageUploadForm';
+import { API_PUT_NOTES_URL } from "./util/URLs";
+import DisplayData from './DisplayData';
 function App() {
-
-  const [manualEntries, setManualEntries] = useState([]);
-
   const handleUpload = (image, email) => {
-    const formData = new FormData();
-    formData.append('file', image);
-    formData.append('email', email);
+    const reader = new FileReader();
+    reader.readAsDataURL(image);
+    reader.onload = () => {
+      const base64Image = reader.result.split(',')[1]; // Remove the prefix from the result
 
-    // Replace with your API URL
-    const API_URL = 'https://your-api-endpoint.com/upload';
-
-    fetch(API_URL, {
-      method: 'POST',
-      body: formData,
-    })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
-      alert('Image uploaded successfully!');
-    })
-    .catch((error) => {
-      console.error('Error:', error);
-      alert('Error uploading image.');
-    });
+      fetch(API_PUT_NOTES_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          file: base64Image,
+          email: email,
+        }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        alert('Image uploaded successfully!');
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        alert('Error uploading image.');
+      });
+    };
+    reader.onerror = error => console.log('Error: ', error);
   };
 
-
-  const onManualEntry = (entry) => {
-    // Replace with your API URL
-    const API_URL = 'https://your-api-endpoint.com/manual-entry';
-
-    fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(entry),
-    })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
-      alert('Entry added successfully!');
-      setManualEntries(prevEntries => [...prevEntries, entry]);
-    })
-    .catch((error) => {
-      console.error('Error:', error);
-      alert('Error adding entry.');
-    });
-  };
   return (
     <div className="App">
-      <h1>Expense Tracker</h1>
-      <ImageUploadAndManualEntryForm onImageUpload={handleUpload} onManualEntry={onManualEntry} />
-      <h2>Manual Expense Entries</h2>
-      <ul>
-        {manualEntries.map((entry, index) => (
-          <li key={index}>
-            {entry.description} - ${entry.amount}
-          </li>
-        ))}
-      </ul>
+      <h1>Upload your image</h1>
+      <ImageUploadForm onUpload={handleUpload} />
+      <DisplayData />
     </div>
   );
 }
