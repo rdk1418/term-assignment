@@ -10,6 +10,8 @@ const DisplayData = () => {
       .then(response => response.json())
       .then(data => {
         setRecords(data);
+        console.log(data)
+        
       })
       .catch((error) => {
         console.error('Error fetching records:', error);
@@ -19,13 +21,7 @@ const DisplayData = () => {
   return (
     <div>
       <h2>Expense Records</h2>
-      <ul>
-        {records.map((record, index) => (
-          <li key={index}>
-            Date: {record.Date}, Amount: {record.Amount}, Vendor: {record.Vendor}
-          </li>
-        ))}
-      </ul>
+     
     </div>
   );
 };
