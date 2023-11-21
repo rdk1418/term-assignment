@@ -19,13 +19,17 @@ import {
 function App() {
   const [uploadMode, setUploadMode] = useState('image'); // 'image' or 'manual'
   const [email, setEmail] = useState(''); // To store user email
-  const [subscriptionConfirmed, setSubscriptionConfirmed] = useState(false);
+  const [subscriptionConfirmed, setSubscriptionConfirmed] = useState(
+    localStorage.getItem('isSubscribed') === 'true'
+  );
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarReceipt, setSnackbarReceipt] = useState(false);
   const [checked, setChecked] = useState(false);
 
   const handleCheckChange = (event) => {
     setChecked(event.target.checked);
+     localStorage.setItem('isSubscribed', event.target.checked);
+  
   };
 
   const handleConfirmEmail = () => {
@@ -50,6 +54,7 @@ function App() {
         console.log(data);
         setSubscriptionConfirmed(true);
         setSnackbarOpen(true);
+        localStorage.setItem('isSubscribed', 'true');
         alert('Subscribed successfully!');
       })
       .catch((error) => {
