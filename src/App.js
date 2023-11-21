@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import ImageUploadForm from './ImageUploadForm';
-import { API_PROCESS_IMAGE_URL, API_ADD_EXPENSE_URL, API_GET_EXPENSE_FROM_DYNAMO ,API_SUBSCRIPTION_ENDPOINT} from "./util/URLs";
+import { API_PROCESS_IMAGE_URL, API_ADD_EXPENSE_URL ,API_SUBSCRIPTION_ENDPOINT} from "./util/URLs";
 import DisplayData from './DisplayData';
 import ManualExpenseForm from './ManualExpenseForm';
 import {
@@ -8,25 +8,36 @@ import {
   Typography,
   ToggleButton,
   ToggleButtonGroup,
-  TextField
+  TextField,
+  Checkbox,
+  FormControlLabel,
+  Snackbar
 } from '@mui/material';
+
+
 
 function App() {
   const [uploadMode, setUploadMode] = useState('image'); // 'image' or 'manual'
   const [email, setEmail] = useState(''); // To store user email
-  const [isSubscribed, setIsSubscribed] = useState(false); // To manage subscription toggle
+  const [subscriptionConfirmed, setSubscriptionConfirmed] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarReceipt, setSnackbarReceipt] = useState(false);
+  const [checked, setChecked] = useState(false);
 
+  const handleCheckChange = (event) => {
+    setChecked(event.target.checked);
+  };
 
-  const handleSubscriptionToggle = () => {
-    setIsSubscribed(!isSubscribed);
-    if (isSubscribed) {
-      // Call your API to subscribe the user
+  const handleConfirmEmail = () => {
+    if (email) {
       subscribeUser();
+    } else {
+      alert('Please enter an email address.');
     }
   };
 
   const subscribeUser = () => {
-    // Assuming you have an API endpoint to subscribe the user
+    // Call your API to subscribe the user
     fetch(API_SUBSCRIPTION_ENDPOINT, {
       method: 'POST',
       headers: {
@@ -34,20 +45,25 @@ function App() {
       },
       body: JSON.stringify({ email: email }),
     })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
-      alert('Subscribed successfully!');
-    })
-    .catch((error) => {
-      console.error('Error:', error);
-      alert('Error in subscription.');
-    });
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        setSubscriptionConfirmed(true);
+        setSnackbarOpen(true);
+        alert('Subscribed successfully!');
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        alert('Error in subscription.');
+      });
   };
 
 
 
-  const handleUpload = (image, email) => {
+
+
+
+  const handleUpload = (image) => {
     const reader = new FileReader();
     reader.readAsDataURL(image);
     reader.onload = () => {
@@ -59,13 +75,13 @@ function App() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          file: base64Image,
-          email: email,
+          file: base64Image
         }),
       })
       .then(response => response.json())
       .then(data => {
         console.log(data);
+        setSnackbarReceipt(true);
         alert('Image uploaded successfully!');
       })
       .catch((error) => {
@@ -118,25 +134,57 @@ function App() {
           Manual Add
         </ToggleButton>
       </ToggleButtonGroup>
- {/* Subscription Toggle and Email Input */}
- <div style={{ margin: '20px 0' }}>
-        <ToggleButton
-          value="check"
-          selected={isSubscribed}
-          onChange={handleSubscriptionToggle}
-        >
-          {isSubscribed ? 'Unsubscribe' : 'Subscribe'}
-        </ToggleButton>
-        {isSubscribed && (
-          <TextField
-            label="Email"
-            variant="outlined"
-            style={{ marginLeft: 10 }}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+          {/* Subscription Checkbox and Email Input */}
+      {!subscriptionConfirmed && (
+        <div style={{ margin: '20px 0' }}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={checked}
+                onChange={handleCheckChange}
+                color="primary"
+              />
+            }
+            label={checked ? 'Subscribed' : 'Subscribe'}
           />
-        )}
-      </div>
+          {checked && (
+            <>
+              <TextField
+                label="Email"
+                variant="outlined"
+                style={{ marginLeft: 10 }}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <Button
+                variant="contained"
+                color="primary"
+                style={{ marginLeft: 10 }}
+                onClick={handleConfirmEmail}
+              >
+                Confirm Email
+              </Button>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Snackbar for Subscription Confirmation */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+        message="You are subscribed to notifications!"
+      />
+
+      {/* Snackbar for Subscription Confirmation */}
+      <Snackbar
+        open={snackbarReceipt}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarReceipt(false)}
+        message="Receipt upoloaded Successfully!"
+      />
+
       {uploadMode === 'image' && (
         <ImageUploadForm onUpload={handleUpload} />
       )}

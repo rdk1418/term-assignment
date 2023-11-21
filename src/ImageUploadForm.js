@@ -4,16 +4,15 @@ import { PhotoCamera } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 
 function ImageUploadForm({ onUpload }) {
-  const [email, setEmail] = useState('');
+
   const [image, setImage] = useState(null);
 
-  const handleEmailChange = (e) => setEmail(e.target.value);
   const handleImageChange = (e) => setImage(e.target.files[0]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (image && email) {
-      onUpload(image, email);
+    if (image ) {
+      onUpload(image);
     } else {
       alert('Please fill in all fields.');
     }
@@ -21,15 +20,7 @@ function ImageUploadForm({ onUpload }) {
 
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
-      <TextField
-        label="Email"
-        type="email"
-        value={email}
-        onChange={handleEmailChange}
-        required
-        variant="outlined"
-        style={{ margin: '10px 0' }}
-      />
+      
       <FormControl>
         <InputLabel htmlFor="image-input">Image</InputLabel>
         <Input
